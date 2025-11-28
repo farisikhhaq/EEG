@@ -1,0 +1,302 @@
+{% extends "app.html" %} {% block content %} {% for log in logs %}
+<div
+  class="modal fade"
+  id="modal{{ loop.index }}"
+  tabindex="-1"
+  aria-labelledby="modal{{ loop.index }}Label"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="modal{{ loop.index }}Label">
+          Log Details
+        </h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-between">
+          <div>
+            <h6>Classification Report</h6>
+            <div>
+              <table class="table text-xs">
+                <thead>
+                  <tr class="text-center">
+                    <th>Class</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-Score</th>
+                    <th>Support</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for label, metrics in log.classification_report.items() %} {%
+                  if label != 'accuracy' %}
+                  <tr class="text-center">
+                    <td>{{ label }}</td>
+                    <td>{{ "%.4f"|format(metrics["precision"]) }}</td>
+                    <td>{{ "%.4f"|format(metrics["recall"]) }}</td>
+                    <td>{{ "%.4f"|format(metrics["f1-score"]) }}</td>
+                    <td>{{ metrics["support"] }}</td>
+                  </tr>
+                  {% endif %} {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="width: 50%;">
+            <h6>Confusion Matrix</h6>
+            <canvas
+              id="confusionMatrix{{ log.id }}"
+              width="400"
+              height="400"
+            ></canvas>
+          </div>
+        </div>
+        <div>
+          <h6>Download</h6>
+          <div class="d-flex align-items-center">
+            <form method="post" class="d-block" action="/download">
+              <input
+                type="hidden"
+                name="file_name"
+                value="{{ log.model_path }}"
+              /><button type="submit" class="btn btn-primary btn-sm">
+                Model
+              </button>
+            </form>
+            <form method="post" class="d-block" action="/download">
+              <input
+                type="hidden"
+                name="file_name"
+                value="{{ log.scaler_path }}"
+              /><button type="submit" class="btn btn-primary btn-sm ms-2">
+                Scaler
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+<div class="card">
+  <div class="card-body">
+    <span class="text-xs">Page {{ logs.page }} of {{ logs.pages }}</span>
+    <table class="table table-striped text-sm">
+      <thead>
+        <tr class="text-center">
+          <th>No</th>
+          <th>Type</th>
+          <th>Model</th>
+          <th>Extraction</th>
+          <th>Accuracy</th>
+          <th>Execution Time</th>
+          <th>Created At</th>
+          <th>Action & Download</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% for log in logs %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ log.type }}</td>
+          <td>{{ log.model_type }}</td>
+          <td>{{ log.extraction_type }}</td>
+          <td>{{ log.accuracy }}%</td>
+          <td class="seconds">{{ log.execution_time }}</td>
+          <td class="date">{{ log.created_at }}</td>
+          <td class="d-flex justify-content-center">
+            <button
+              data-bs-toggle="modal"
+              onclick="renderConfusionMatrix(`confusionMatrix{{ log.id }}`, `{{ log.confusion_matrix }}`)"
+              data-bs-target="#modal{{ loop.index }}"
+              class="btn btn-xs btn-info me-2"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+            <form
+              action="/logs/delete/{{ log.id }}"
+              method="post"
+              onsubmit="confirmation(this)"
+            >
+              <button type="submit" class="btn btn-danger btn-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div>
+      {% if logs.has_prev %}
+      <a
+        href="{{ url_for('web.logs_view', page=logs.prev_num) }}"
+        class="btn btn-primary mr-2"
+        >Previous</a
+      >
+      {% endif %} {% if logs.has_next %}
+      <a
+        href="{{ url_for('web.logs_view', page=logs.next_num) }}"
+        class="btn btn-primary"
+        >Next</a
+      >
+      {% endif %}
+    </div>
+  </div>
+</div>
+<style>
+  th,
+  td {
+    vertical-align: middle;
+  }
+</style>
+<script>
+  document.querySelectorAll(".seconds").forEach((el) => {
+    let seconds = parseInt(el.innerHTML);
+    if (seconds === 0) {
+      return "0s";
+    }
+
+    const timeUnits = [
+      { unit: "d", value: 86400 },
+      { unit: "h", value: 3600 },
+      { unit: "m", value: 60 },
+      { unit: "s", value: 1 },
+    ];
+
+    let remaining = seconds;
+    let parts = [];
+
+    timeUnits.forEach(({ unit, value }) => {
+      if (remaining >= value) {
+        const count = Math.floor(remaining / value);
+        parts.push(`${count}${unit}`);
+        remaining = remaining % value;
+      }
+    });
+
+    el.innerHTML = parts.join(" ");
+  });
+  document.querySelectorAll(".date").forEach((el) => {
+    const dateStr = el.textContent || el.innerText;
+
+    const date = new Date(dateStr);
+
+    const formattedDate = date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    el.textContent = formattedDate.replace(",", "");
+  });
+
+  const renderConfusionMatrix = (canvasId, raw) => {
+    const fixed = raw.replace(/'/g, '"');
+    const data = JSON.parse(fixed);
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    const matrix = data.matrix;
+    const labels = data.classes;
+
+    const maxValue = Math.max(...matrix.flat());
+
+    const chartData = [];
+
+    for (let row = 0; row < matrix.length; row++) {
+      for (let col = 0; col < matrix[row].length; col++) {
+        chartData.push({
+          x: col,
+          y: matrix.length - 1 - row,
+          v: matrix[row][col],
+        });
+      }
+    }
+
+    new Chart(ctx, {
+      type: "matrix",
+      data: {
+        datasets: [
+          {
+            label: "Confusion Matrix",
+            data: chartData,
+            backgroundColor(ctx) {
+              const value = ctx.dataset.data[ctx.dataIndex].v;
+              const alpha = value / maxValue;
+              return `rgba(0, 123, 255, ${alpha})`;
+            },
+            borderWidth: 1,
+            width: (ctx) => {
+              const area = ctx.chart.chartArea;
+              return area ? area.width / matrix.length : 20;
+            },
+            height: (ctx) => {
+              const area = ctx.chart.chartArea;
+              return area ? area.height / matrix.length : 20;
+            },
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: () => "",
+              label: (ctx) => {
+                const xLabel = labels[ctx.raw.x];
+                const yLabel = labels[matrix.length - 1 - ctx.raw.y];
+                const val = ctx.raw.v;
+                return `Predicted: ${xLabel}, Actual: ${yLabel}, Count: ${val}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            type: "linear",
+            position: "top",
+            ticks: {
+              callback: (value) => labels[value] || "",
+              autoSkip: false,
+              maxRotation: 90,
+              minRotation: 45,
+            },
+            grid: { display: false },
+            offset: false,
+            min: -0.5,
+            max: labels.length - 0.5,
+          },
+          y: {
+            type: "linear",
+            ticks: {
+              callback: (value) => labels[matrix.length - 1 - value] || "",
+            },
+            grid: { display: false },
+            offset: false,
+            min: -0.5,
+            max: labels.length - 0.5,
+          },
+        },
+      },
+    });
+  };
+</script>
+{% endblock %}

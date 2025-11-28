@@ -1,0 +1,7 @@
+*.csv
+/env
+/Experiment
+/Testing
+*.rar
+*.zip
+/data

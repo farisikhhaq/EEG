@@ -1,0 +1,43 @@
+{% extends "app.html" %} {% block content %}
+<div class="card">
+  <div class="card-body">
+    <div class="mb-5">
+      <h6 class="text-center">
+        Dashboard Analisis Efektivitas Metode Electroencephalography Dalam
+        Klasifikasi Kategori Berpikir Manusia Menggunakan Algoritma Machine
+        Learning.
+      </h6>
+    </div>
+    <div>
+      <p class="text-justify">
+        &nbsp;&nbsp;&nbsp;&nbsp;Dashboard ini menyajikan hasil analisis
+        efektivitas metode Electroencephalography (EEG) dalam mengklasifikasikan
+        kategori berpikir manusia menggunakan berbagai algoritma Machine
+        Learning. Melalui tampilan visual yang interaktif dan informatif,
+        pengguna dapat mengeksplorasi seluruh tahapan penelitian mulai dari
+        memilih model dan ekstraksi fitur yang digunakan, hingga evaluasi
+        performa model klasifikasi.
+      </p>
+      <p class="text-justify">
+        &nbsp;&nbsp;&nbsp;&nbsp;Tahap preprocessing dan ekstraksi fitur dalam
+        dashboard ini mencakup proses pembersihan dan pengolahan sinyal EEG
+        sebelum digunakan untuk pelatihan model. Proses ini melibatkan penerapan
+        bandpass filter untuk menghilangkan noise di luar rentang frekuensi yang
+        relevan, serta teknik windowing untuk membagi sinyal menjadi
+        segmen-segmen yang lebih kecil. Dari setiap segmen, fitur penting
+        seperti mean, entropy, dan energy diekstraksi untuk merepresentasikan
+        karakteristik sinyal otak secara numerik.
+      </p>
+      <p class="text-justify">
+        &nbsp;&nbsp;&nbsp;&nbsp;Selanjutnya, pada tahap model klasifikasi,
+        dashboard menyajikan perbandingan performa dari beberapa algoritma
+        machine learning, yaitu Support Vector Machine (SVM), Random Forest, dan
+        Naive Bayes. Setiap model dievaluasi berdasarkan metrik seperti akurasi,
+        precision, recall, dan ditampilkan melalui confusion matrix yang
+        memberikan gambaran visual tentang efektivitas klasifikasi untuk
+        masing-masing kategori berpikir.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
