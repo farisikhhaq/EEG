@@ -1,0 +1,40 @@
+{
+  "model_type": "RandomForestClassifier",
+  "features_used": [
+    "Channel_1_PSD",
+    "Channel_2_PSD",
+    "Channel_5_PSD",
+    "Channel_6_PSD",
+    "Channel_10_PSD",
+    "Channel_11_PSD",
+    "Channel_23_PSD",
+    "Channel_24_PSD",
+    "Channel_27_PSD",
+    "Channel_28_PSD",
+    "Channel_8_PSD",
+    "Channel_9_PSD",
+    "Channel_16_PSD",
+    "Channel_17_PSD",
+    "Channel_21_PSD",
+    "Channel_22_PSD"
+  ],
+  "n_features": 16,
+  "target_labels": {
+    "0": "Resting State",
+    "1": "Memory Recall",
+    "2": "Arithmetic Calculation",
+    "3": "Visual Pattern Recognition"
+  },
+  "performance_metrics": {
+    "accuracy": 0.25,
+    "precision": 0.35000000000000003,
+    "recall": 0.25,
+    "f1_score": 0.25
+  },
+  "training_info": {
+    "train_test_split": "70/30",
+    "random_state": 42,
+    "stratified": true,
+    "n_estimators": 100
+  }
+}
